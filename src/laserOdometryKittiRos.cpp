@@ -1006,7 +1006,7 @@ int main(int argc, char** argv)
 
       init_flag=false;
 
-      std::cout<<"surf_th : "<<surfThreshold<<endl;
+      //std::cout<<"surf_th : "<<surfThreshold<<endl;
 
       }
 
@@ -1033,7 +1033,7 @@ int main(int argc, char** argv)
            {
                     if(i==2 && j==3)
                     {
-                            foutC <<H.row(i)[j]<< endl ;	
+                            foutC <<H.row(i)[j]<< std::endl ;	
                     }
                     else
                     {
