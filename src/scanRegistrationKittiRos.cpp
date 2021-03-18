@@ -885,7 +885,7 @@ int main(int argc, char** argv)
   
   std::string path = argv[1];//load path
   std::string sequence = argv[2];//load sequence
-  std::string file = path + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+  std::string file =  path + "/sequences/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
   //std::string file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";	
 
   FILE *stream;
@@ -940,7 +940,7 @@ int main(int argc, char** argv)
 	  //reset variables to read a new sweep
 	  fclose(stream);
 	  currentFrame++;
-	  file = path + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+	  std::string file =  path + "/sequences/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
 	  //file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
 	  //std::cout<<file<<std::endl;
 	  fflush(stream);
