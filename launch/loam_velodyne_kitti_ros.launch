@@ -1,6 +1,9 @@
 <launch>
 
   <arg name="rviz" default="true" />
+  
+  <!--- Result dir -->  
+  <param name="RESULT_PATH" type="string" value="/home/crubio/dataset/kitti/loam.txt" />
 
   <node pkg="loam_velodyne_kitti_ros" type="scanRegistrationKittiRos" name="scanRegistrationKittiRos" args="/home/crubio/dataset/kitti/05_odom 05" output="screen"/>
 
