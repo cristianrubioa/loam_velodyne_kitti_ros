@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf)
 
-find_package(PCL 1.9 REQUIRED)
+find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)
 
 include_directories(
