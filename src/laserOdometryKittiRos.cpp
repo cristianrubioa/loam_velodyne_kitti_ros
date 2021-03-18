@@ -989,19 +989,19 @@ int main(int argc, char** argv)
 
       Eigen::Quaterniond q;
 
-      q.w()=laserOdometry2.pose.pose.orientation.w;
-      q.x()=laserOdometry2.pose.pose.orientation.x;
-      q.y()=laserOdometry2.pose.pose.orientation.y;
-      q.z()=laserOdometry2.pose.pose.orientation.z;
+      q.w()=laserOdometry.pose.pose.orientation.w;
+      q.x()=laserOdometry.pose.pose.orientation.x;
+      q.y()=laserOdometry.pose.pose.orientation.y;
+      q.z()=laserOdometry.pose.pose.orientation.z;
 
       Eigen::Matrix3d R = q.toRotationMatrix();
 
       if (init_flag==true)	
       {
 
-      H_init<< R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
-               R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
-               R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+      H_init<< R.row(0)[0],R.row(0)[1],R.row(0)[2],tx,
+               R.row(1)[0],R.row(1)[1],R.row(1)[2],ty,
+               R.row(2)[0],R.row(2)[1],R.row(2)[2],tz,
                  0,0,0,1;  
 
       init_flag=false;
@@ -1015,9 +1015,9 @@ int main(int argc, char** argv)
               0,0,1,0,	
               0,0,0,1; 
 		
-      H<<  R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
-           R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
-           R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+      H<<  R.row(0)[0],R.row(0)[1],R.row(0)[2],tx,
+           R.row(1)[0],R.row(1)[1],R.row(1)[2],ty,
+           R.row(2)[0],R.row(2)[1],R.row(2)[2],tz,
            0,0,0,1;  
 
       H = H_rot*H_init.inverse()*H;
