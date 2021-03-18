@@ -825,8 +825,8 @@ int main(int argc, char** argv)
 
   //std::cout<<"HolaMundo\n";
 
-  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
-                                  ("/kitti/velo/pointcloud", 2, laserCloudHandler);
+  //ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>
+  //                                ("/kitti/velo/pointcloud", 2, laserCloudHandler);
 
   ros::Subscriber subImu = nh.subscribe<sensor_msgs::Imu> ("/imu/data", 50, imuHandler);
 
