@@ -50,6 +50,14 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 
+//declare var
+int init_flag=true;
+
+    Eigen::Matrix4f H;
+    Eigen::Matrix4f H_init;
+    Eigen::Matrix4f H_rot;
+
+std::string RESULT_PATH;
 
 const float scanPeriod = 0.1;
 
@@ -384,6 +392,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   //std::ofstream lmIterationsLaserOdometry = std::ofstream("/home/claydergc/originalLOAMLMIterations_LO00.txt");
+  nh.getParam("RESULT_PATH", RESULT_PATH);
 
   ros::Subscriber subCornerPointsSharp = nh.subscribe<sensor_msgs::PointCloud2>
                                          ("/laser_cloud_sharp", 2, laserCloudSharpHandler);
@@ -975,6 +984,67 @@ int main(int argc, char** argv)
       laserOdometry.pose.pose.position.y = ty;
       laserOdometry.pose.pose.position.z = tz;
       pubLaserOdometry.publish(laserOdometry);
+      
+      ///////////////////// KITTI format pose ///////////////////
+
+      Eigen::Quaterniond q;
+
+      q.w()=laserOdometry2.pose.pose.orientation.w;
+      q.x()=laserOdometry2.pose.pose.orientation.x;
+      q.y()=laserOdometry2.pose.pose.orientation.y;
+      q.z()=laserOdometry2.pose.pose.orientation.z;
+
+      Eigen::Matrix3d R = q.toRotationMatrix();
+
+      if (init_flag==true)	
+      {
+
+      H_init<< R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
+               R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
+               R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+                 0,0,0,1;  
+
+      init_flag=false;
+
+      std::cout<<"surf_th : "<<surfThreshold<<endl;
+
+      }
+
+      H_rot<<	-1,0,0,0,
+              0,-1,0,0,
+              0,0,1,0,	
+              0,0,0,1; 
+		
+      H<<  R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
+           R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
+           R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+           0,0,0,1;  
+
+      H = H_rot*H_init.inverse()*H;
+
+      std::ofstream foutC(RESULT_PATH, std::ios::app);
+
+      foutC.setf(std::ios::scientific, std::ios::floatfield);
+      foutC.precision(6);
+ 
+      for (int i = 0; i < 3; ++i)	
+      {	 
+           for (int j = 0; j < 4; ++j)
+           {
+                    if(i==2 && j==3)
+                    {
+                            foutC <<H.row(i)[j]<< endl ;	
+                    }
+                    else
+                    {
+                            foutC <<H.row(i)[j]<< " " ;
+                    }
+           }
+      }
+
+	    foutC.close();
+      
+      //////////////////////////////////////////////////
 
       laserOdometryTrans.stamp_ = ros::Time().fromSec(timeSurfPointsLessFlat);
       laserOdometryTrans.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
