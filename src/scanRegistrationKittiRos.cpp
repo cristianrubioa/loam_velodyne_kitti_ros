@@ -885,13 +885,15 @@ int main(int argc, char** argv)
   
   std::string path = argv[1];//load path
   std::string sequence = argv[2];//load sequence
-  std::string file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+  std::string file = path + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+  //std::string file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";	
 
   FILE *stream;
   stream = fopen (file.c_str(),"rb");
   //std::cout<<file<<std::endl;
-
-  std::string timesFileStr = path + "/data_odometry_calib/dataset/sequences/" + sequence + "/times.txt";
+  std::string timesFileStr = path + "/sequences/" + sequence + "/times.txt";
+  //std::string timesFileStr = path + "/data_odometry_calib/dataset/sequences/" + sequence + "/times.txt";
+	
   std::ifstream timesFile(timesFileStr);
   std::string timeStr;
   double time;
@@ -938,7 +940,8 @@ int main(int argc, char** argv)
 	  //reset variables to read a new sweep
 	  fclose(stream);
 	  currentFrame++;
-	  file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+	  file = path + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
+	  //file = path + "/data_odometry_velodyne/dataset/" + sequence + "/velodyne/" + getFrameStr(currentFrame) + ".bin";
 	  //std::cout<<file<<std::endl;
 	  fflush(stream);
 	  stream = fopen (file.c_str(),"rb");
