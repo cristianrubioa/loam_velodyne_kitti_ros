@@ -51,6 +51,15 @@
 
 using namespace Eigen;
 
+//declare var
+int init_flag=true;
+
+    Eigen::Matrix4f H;
+    Eigen::Matrix4f H_init;
+    Eigen::Matrix4f H_rot;
+
+std::string RESULT_PATH;
+
 float transformSum[6] = {0};
 float transformIncre[6] = {0};
 float transformMapped[6] = {0};
@@ -194,6 +203,67 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr& laserOdometry)
   laserOdometry2.pose.pose.position.z = transformMapped[5];
   pubLaserOdometry2Pointer->publish(laserOdometry2);
 
+  ///////////////////// KITTI format pose ///////////////////
+
+        Eigen::Quaterniond q;
+
+        q.w()=laserOdometry2.pose.pose.orientation.w;
+        q.x()=laserOdometry2.pose.pose.orientation.x;
+        q.y()=laserOdometry2.pose.pose.orientation.y;
+        q.z()=laserOdometry2.pose.pose.orientation.z;
+
+        Eigen::Matrix3d R = q.toRotationMatrix();
+
+        if (init_flag==true)	
+        {
+
+        H_init<< R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
+                R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
+                R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+                0,0,0,1;  
+
+        init_flag=false;
+
+        //std::cout<<"surf_th : "<<surfThreshold<<endl;
+
+        }
+
+        H_rot<<	-1,0,0,0,
+                0,-1,0,0,
+                0,0,1,0,	
+                0,0,0,1; 
+      
+        H<<  R.row(0)[0],R.row(0)[1],R.row(0)[2],transformMapped[3],
+            R.row(1)[0],R.row(1)[1],R.row(1)[2],transformMapped[4],
+            R.row(2)[0],R.row(2)[1],R.row(2)[2],transformMapped[5],
+            0,0,0,1;  
+
+        H = H_rot*H_init.inverse()*H;
+
+        std::ofstream foutC(RESULT_PATH, std::ios::app);
+
+        foutC.setf(std::ios::scientific, std::ios::floatfield);
+        foutC.precision(6);
+  
+        for (int i = 0; i < 3; ++i)	
+        {	 
+          for (int j = 0; j < 4; ++j)
+          {
+            if(i==2 && j==3)
+            {
+              foutC <<H.row(i)[j]<< std::endl ;	
+            }
+            else
+            {
+              foutC <<H.row(i)[j]<< " " ;
+            }
+          }
+        }
+
+        foutC.close();
+      
+      //////////////////////////////////////////////////
+
   laserOdometryTrans2.stamp_ = laserOdometry->header.stamp;
   laserOdometryTrans2.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
   laserOdometryTrans2.setOrigin(tf::Vector3(transformMapped[3], transformMapped[4], transformMapped[5]));
@@ -249,6 +319,9 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "transformMaintenanceKittiRos");
   ros::NodeHandle nh;
+
+  nh.getParam("RESULT_PATH", RESULT_PATH);
+
 
   ros::Subscriber subLaserOdometry = nh.subscribe<nav_msgs::Odometry> 
                                      ("/laser_odom_to_init", 5, laserOdometryHandler);

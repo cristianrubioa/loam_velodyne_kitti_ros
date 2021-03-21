@@ -55,15 +55,6 @@ const float scanPeriod = 0.1;
 const int stackFrameNum = 1;
 const int mapFrameNum = 5;
 
-//declare var
-int init_flag=true;
-
-    Eigen::Matrix4f H;
-    Eigen::Matrix4f H_init;
-    Eigen::Matrix4f H_rot;
-
-std::string RESULT_PATH;
-
 double timeLaserCloudCornerLast = 0;
 double timeLaserCloudSurfLast = 0;
 double timeLaserCloudFullRes = 0;
@@ -364,9 +355,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "laserMappingKittiRos");
   ros::NodeHandle nh;
-
-  nh.getParam("RESULT_PATH", RESULT_PATH);
-
   ros::Subscriber subLaserCloudCornerLast = nh.subscribe<sensor_msgs::PointCloud2>
                                             ("/laser_cloud_corner_last", 2, laserCloudCornerLastHandler);
 
@@ -1178,67 +1166,6 @@ int main(int argc, char** argv)
         odomAftMapped.twist.twist.linear.y = 0;
         odomAftMapped.twist.twist.linear.z = 0;*/
         pubOdomAftMapped.publish(odomAftMapped);
-
-        ///////////////////// KITTI format pose ///////////////////
-
-        Eigen::Quaterniond q;
-
-        q.w()=odomAftMapped.pose.pose.orientation.w;
-        q.x()=odomAftMapped.pose.pose.orientation.x;
-        q.y()=odomAftMapped.pose.pose.orientation.y;
-        q.z()=odomAftMapped.pose.pose.orientation.z;
-
-        Eigen::Matrix3d R = q.toRotationMatrix();
-
-        if (init_flag==true)	
-        {
-
-        H_init<< R.row(0)[0],R.row(0)[1],R.row(0)[2],transformAftMapped[3],
-                R.row(1)[0],R.row(1)[1],R.row(1)[2],transformAftMapped[4],
-                R.row(2)[0],R.row(2)[1],R.row(2)[2],transformAftMapped[5],
-                0,0,0,1;  
-
-        init_flag=false;
-
-        //std::cout<<"surf_th : "<<surfThreshold<<endl;
-
-        }
-
-        H_rot<<	-1,0,0,0,
-                0,-1,0,0,
-                0,0,1,0,	
-                0,0,0,1; 
-      
-        H<<  R.row(0)[0],R.row(0)[1],R.row(0)[2],transformAftMapped[3],
-            R.row(1)[0],R.row(1)[1],R.row(1)[2],transformAftMapped[4],
-            R.row(2)[0],R.row(2)[1],R.row(2)[2],transformAftMapped[5],
-            0,0,0,1;  
-
-        H = H_rot*H_init.inverse()*H;
-
-        std::ofstream foutC(RESULT_PATH, std::ios::app);
-
-        foutC.setf(std::ios::scientific, std::ios::floatfield);
-        foutC.precision(6);
-  
-        for (int i = 0; i < 3; ++i)	
-        {	 
-          for (int j = 0; j < 4; ++j)
-          {
-            if(i==2 && j==3)
-            {
-              foutC <<H.row(i)[j]<< std::endl ;	
-            }
-            else
-            {
-              foutC <<H.row(i)[j]<< " " ;
-            }
-          }
-        }
-
-        foutC.close();
-      
-      //////////////////////////////////////////////////
 
         aftMappedTrans.stamp_ = ros::Time().fromSec(timeLaserOdometry);
         aftMappedTrans.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));
